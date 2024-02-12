@@ -1,0 +1,222 @@
+openapi: 3.0.3
+info:
+  description: Go Layered Skeletor Service REST API spec
+  title: ta.go-hexagonal-skeletor
+  version: 1.0.0
+servers:
+- description: Local
+  url: http://localhost:3000/api/{version}
+  variables:
+    ServerDNS:
+      default: go-hexagonal-skeletor.shared-testing.audibene.net
+      enum:
+      - go-hexagonal-skeletor.shared-testing.audibene.net
+      - go-hexagonal-skeletor.shared-staging.audibene.net
+      - go-hexagonal-skeletor.audibene.net
+    version:
+      default: v1
+      enum:
+      - v1
+- description: Testing
+  url: https://{ServerDNS}/api/{version}
+  variables:
+    ServerDNS:
+      default: go-hexagonal-skeletor.shared-testing.audibene.net
+      enum:
+      - go-hexagonal-skeletor.shared-testing.audibene.net
+      - go-hexagonal-skeletor.shared-staging.audibene.net
+      - go-hexagonal-skeletor.audibene.net
+    version:
+      default: v1
+      enum:
+      - v1
+- description: Staging
+  url: https://{ServerDNS}/api/{version}
+  variables:
+    ServerDNS:
+      default: go-hexagonal-skeletor.shared-testing.audibene.net
+      enum:
+      - go-hexagonal-skeletor.shared-testing.audibene.net
+      - go-hexagonal-skeletor.shared-staging.audibene.net
+      - go-hexagonal-skeletor.audibene.net
+    version:
+      default: v1
+      enum:
+      - v1
+- description: Production
+  url: https://{ServerDNS}/api/{version}
+  variables:
+    ServerDNS:
+      default: go-hexagonal-skeletor.shared-testing.audibene.net
+      enum:
+      - go-hexagonal-skeletor.shared-testing.audibene.net
+      - go-hexagonal-skeletor.shared-staging.audibene.net
+      - go-hexagonal-skeletor.audibene.net
+    version:
+      default: v1
+      enum:
+      - v1
+security:
+- BearerAuth: []
+paths:
+  /api/v1/player:
+    get:
+      description: Get Many Bees
+      operationId: getManyPlayers
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: pageSize
+        schema:
+          type: integer
+      - in: query
+        name: sortBy
+        schema:
+          type: string
+      - in: query
+        name: sort
+        schema:
+          $ref: '#/components/schemas/ModelSortDirection'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiPortsGetManyPlayersQuery'
+          description: OK
+      summary: Get Many Bees
+      tags:
+      - players
+    patch:
+      description: Update One Bee
+      operationId: updateOneOperationId
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiPortsUpdatePlayerRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiPortsUpdatePlayerRequest'
+          description: OK
+      summary: Update One Bee
+      tags:
+      - players
+    post:
+      description: Create One Player
+      operationId: createOneOperationId
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiPortsCreatePlayerRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiPortsCreatePlayerRequest'
+          description: OK
+      summary: Create One Player
+      tags:
+      - players
+  /api/v1/player/{gid}:
+    get:
+      description: Get One Player
+      operationId: getOnePlayer
+      parameters:
+      - in: path
+        name: gid
+        required: true
+        schema:
+          example: xxxx-xxxxx-xxxxx-xxxx
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelPlayer'
+          description: OK
+      summary: Get One Player
+      tags:
+      - players
+components:
+  schemas:
+    ApiPortsCreatePlayerRequest:
+      properties:
+        email:
+          type: string
+        familyName:
+          type: string
+        gid:
+          nullable: true
+          type: string
+        givenName:
+          type: string
+        password:
+          type: string
+      type: object
+    ApiPortsGetManyPlayersQuery:
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        sort:
+          $ref: '#/components/schemas/ModelSortDirection'
+        sortBy:
+          nullable: true
+          type: string
+      type: object
+    ApiPortsUpdatePlayerRequest:
+      properties:
+        email:
+          nullable: true
+          type: string
+        familyName:
+          nullable: true
+          type: string
+        givenName:
+          nullable: true
+          type: string
+        password:
+          nullable: true
+          type: string
+      type: object
+    ModelPlayer:
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        email:
+          type: string
+        familyName:
+          type: string
+        gid:
+          type: string
+        givenName:
+          type: string
+        password:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+      type: object
+    ModelSortDirection:
+      enum:
+      - ASC
+      - DESC
+      nullable: true
+      type: string
+  securitySchemes:
+    BearerAuth:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
