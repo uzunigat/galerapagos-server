@@ -11,10 +11,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const (
-	tableName = "player"
-)
-
 type PostgresPlayerRepository struct {
 	client *BunPostgresDatabaseClient
 }
@@ -29,7 +25,7 @@ func NewPlayerRepository(dbClient *BunPostgresDatabaseClient) *PostgresPlayerRep
 func (repo *PostgresPlayerRepository) CreateOne(ctx model.Context, createPlayerRequest spiports.CreatePlayerRequest) (*model.Player, error) {
 	player := &model.Player{}
 
-	_, err := repo.client.DB.NewInsert().Model(&createPlayerRequest).ModelTableExpr(tableName).Returning("*").Exec(ctx, player)
+	_, err := repo.client.DB.NewInsert().Model(&createPlayerRequest).ModelTableExpr(tablePlayer).Returning("*").Exec(ctx, player)
 
 	if err != nil {
 		return nil, NewUnkownDatabaseError(err)
@@ -40,11 +36,11 @@ func (repo *PostgresPlayerRepository) CreateOne(ctx model.Context, createPlayerR
 func (repo *PostgresPlayerRepository) GetOne(ctx model.Context, gid string) (*model.Player, error) {
 	player := &model.Player{}
 
-	err := repo.client.DB.NewSelect().Model(player).ModelTableExpr(tableName).Where("gid = ?", gid).Scan(ctx)
+	err := repo.client.DB.NewSelect().Model(player).ModelTableExpr(tablePlayer).Where("gid = ?", gid).Scan(ctx)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, NewBeeNotFoundError(fmt.Errorf("Player with gid %s could not be found.", gid))
+			return nil, NewPlayerNotFoundError(fmt.Errorf("Player with gid %s could not be found.", gid))
 		}
 		return nil, NewUnkownDatabaseError(err)
 	}
@@ -61,7 +57,7 @@ func (repo *PostgresPlayerRepository) GetMany(ctx model.Context, query apiports.
 		PagesTotal: 1,
 	}
 
-	dbQuery := repo.client.DB.NewSelect().Model(&players).ModelTableExpr(tableName)
+	dbQuery := repo.client.DB.NewSelect().Model(&players).ModelTableExpr(tablePlayer)
 
 	dbutils.UrlToDbQuery(dbQuery, query)
 
@@ -89,12 +85,12 @@ func (repo *PostgresPlayerRepository) GetMany(ctx model.Context, query apiports.
 }
 
 func (repo *PostgresPlayerRepository) UpdateOne(ctx model.Context, gid string, updatePlayerRequest spiports.UpdatePlayerRequest) (*model.Player, error) {
-	bee := &model.Player{}
+	player := &model.Player{}
 
-	_, err := repo.client.DB.NewUpdate().OmitZero().Model(&updatePlayerRequest).Where("gid = ?", gid).ModelTableExpr(tableName).Returning("*").Exec(ctx, bee)
+	_, err := repo.client.DB.NewUpdate().OmitZero().Model(&updatePlayerRequest).Where("gid = ?", gid).ModelTableExpr(tablePlayer).Returning("*").Exec(ctx, player)
 
 	if err != nil {
 		return nil, NewUnkownDatabaseError(err)
 	}
-	return bee, nil
+	return player, nil
 }

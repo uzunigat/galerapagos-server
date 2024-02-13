@@ -6,6 +6,10 @@ func NewUnkownDatabaseError(err error) *errors.CustomError {
 	return errors.NewInternalServerError("UNKNOWN_DATABASE_ERROR", err)
 }
 
-func NewBeeNotFoundError(err error) *errors.CustomError {
-	return errors.NewRecordNotFoundError("BEE_NOT_FOUND", err)
+func NewGameNotFoundError(err error) *errors.CustomError {
+	return errors.NewRecordNotFoundError("GAME_NOT_FOUND", err)
+}
+
+func NewPlayerNotFoundError(err error) *errors.CustomError {
+	return errors.NewRecordNotFoundError("PLAYER_NOT_FOUND", err)
 }

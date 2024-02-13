@@ -20,7 +20,10 @@ func main() {
 
 	info.AddInfo(&reflector)
 	server.AddServers(&reflector)
+
 	path.AddPlayerOperations(&reflector)
+	path.AddGameOperations(&reflector)
+
 	security.AddSecurity(&reflector)
 
 	schema, err := reflector.Spec.MarshalYAML()

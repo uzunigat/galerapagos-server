@@ -61,14 +61,19 @@ func main() {
 		GidGenerator: domainutils.NewDomainGidGenerator(GID_PREFIX),
 	}
 
-	beeRepository := postgres.NewPlayerRepository(dbClient)
-	beeService := services.NewPlayerService(beeRepository, serviceUtils)
+	playerRepository := postgres.NewPlayerRepository(dbClient)
+	gameRepository := postgres.NewGameRepository(dbClient)
+
+	playerService := services.NewPlayerService(playerRepository, serviceUtils)
+	gameService := services.NewGameService(gameRepository, serviceUtils)
 
 	httpErrorHandler := httperror.NewHttpErrorHandler()
 
-	beeController := v1Controllers.NewPlayerController(beeService, httpErrorHandler)
+	playerController := v1Controllers.NewPlayerController(playerService, httpErrorHandler)
+	gameController := v1Controllers.NewGameController(gameService, httpErrorHandler)
 
-	v1Routes.AttachV1PlayerRoutes(router, beeController)
+	v1Routes.AttachV1PlayerRoutes(router, playerController)
+	v1Routes.AttachV1PGameRoutes(router, gameController)
 
 	server := api.NewServer(&config.App, router)
 

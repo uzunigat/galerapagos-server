@@ -20,20 +20,20 @@ func AddPlayerOperations(reflector *openapi3.Reflector) {
 
 	getOneOperationId := "getOnePlayer"
 	getManyOperationId := "getManyPlayers"
-	createOneOperationId := "createOneOperationId"
-	updateOneOperationId := "updateOneOperationId"
+	createOneOperationId := "createOnePlayer"
+	updateOneOperationId := "updateOnePlayer"
 
 	baseOperationRequest := model.BaseOperationRequest{
 		Reflector: reflector,
 		Tags:      []string{"players"},
 	}
 
-	getOneBee := openapi3.Operation{
+	getOnePlayer := openapi3.Operation{
 		ID: &getOneOperationId,
 	}
 
 	utils.AddOperation(model.OperationRequest{
-		Operation:            &getOneBee,
+		Operation:            &getOnePlayer,
 		Method:               http.MethodGet,
 		Model:                new(domainmodel.Player),
 		Summary:              "Get One Player",
@@ -50,7 +50,7 @@ func AddPlayerOperations(reflector *openapi3.Reflector) {
 		Operation:            &getManyPlayers,
 		Method:               http.MethodGet,
 		Model:                new(apiports.GetManyPlayersQuery),
-		Summary:              "Get Many Bees",
+		Summary:              "Get Many Players",
 		Query:                new(apiports.GetManyPlayersQuery),
 		Path:                 "/api/v1/player",
 		BaseOperationRequest: baseOperationRequest,
@@ -71,15 +71,15 @@ func AddPlayerOperations(reflector *openapi3.Reflector) {
 		BaseOperationRequest: baseOperationRequest,
 	})
 
-	updateOneBee := openapi3.Operation{
+	updateOnePlayer := openapi3.Operation{
 		ID: &updateOneOperationId,
 	}
 
 	utils.AddOperation(model.OperationRequest{
-		Operation:            &updateOneBee,
+		Operation:            &updateOnePlayer,
 		Method:               http.MethodPatch,
 		Model:                new(apiports.UpdatePlayerRequest),
-		Summary:              "Update One Bee",
+		Summary:              "Update One Player",
 		Query:                new(apiports.UpdatePlayerRequest),
 		ErrorResponse:        errors.NewRecordNotFoundError("PLAYER_NOT_FOUND", fmt.Errorf("player with gid xxxx-xxx-xxxx could not be found")),
 		Path:                 "/api/v1/player",

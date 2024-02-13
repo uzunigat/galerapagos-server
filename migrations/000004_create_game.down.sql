@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS game;
+DROP TRIGGER IF EXISTS game_updated_at ON file;

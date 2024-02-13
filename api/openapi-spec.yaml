@@ -1,43 +1,15 @@
 openapi: 3.0.3
 info:
-  description: Go Layered Skeletor Service REST API spec
-  title: ta.go-hexagonal-skeletor
+  description: Galerapagos Server REST API spec
+  title: galerapagos-server
   version: 1.0.0
 servers:
 - description: Local
   url: http://localhost:3000/api/{version}
   variables:
     ServerDNS:
-      default: go-hexagonal-skeletor.shared-testing.audibene.net
+      default: go-hexagonal-skeletor.audibene.net
       enum:
-      - go-hexagonal-skeletor.shared-testing.audibene.net
-      - go-hexagonal-skeletor.shared-staging.audibene.net
-      - go-hexagonal-skeletor.audibene.net
-    version:
-      default: v1
-      enum:
-      - v1
-- description: Testing
-  url: https://{ServerDNS}/api/{version}
-  variables:
-    ServerDNS:
-      default: go-hexagonal-skeletor.shared-testing.audibene.net
-      enum:
-      - go-hexagonal-skeletor.shared-testing.audibene.net
-      - go-hexagonal-skeletor.shared-staging.audibene.net
-      - go-hexagonal-skeletor.audibene.net
-    version:
-      default: v1
-      enum:
-      - v1
-- description: Staging
-  url: https://{ServerDNS}/api/{version}
-  variables:
-    ServerDNS:
-      default: go-hexagonal-skeletor.shared-testing.audibene.net
-      enum:
-      - go-hexagonal-skeletor.shared-testing.audibene.net
-      - go-hexagonal-skeletor.shared-staging.audibene.net
       - go-hexagonal-skeletor.audibene.net
     version:
       default: v1
@@ -47,10 +19,8 @@ servers:
   url: https://{ServerDNS}/api/{version}
   variables:
     ServerDNS:
-      default: go-hexagonal-skeletor.shared-testing.audibene.net
+      default: go-hexagonal-skeletor.audibene.net
       enum:
-      - go-hexagonal-skeletor.shared-testing.audibene.net
-      - go-hexagonal-skeletor.shared-staging.audibene.net
       - go-hexagonal-skeletor.audibene.net
     version:
       default: v1
@@ -59,9 +29,97 @@ servers:
 security:
 - BearerAuth: []
 paths:
+  /api/v1/game:
+    get:
+      description: Get Many Games
+      operationId: getManyGames
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: pageSize
+        schema:
+          type: integer
+      - in: query
+        name: sortBy
+        schema:
+          type: string
+      - in: query
+        name: sort
+        schema:
+          $ref: '#/components/schemas/ModelSortDirection'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiPortsGetManyGamesQuery'
+          description: OK
+      summary: Get Many Games
+      tags:
+      - games
+    patch:
+      description: Update One Game
+      operationId: updateOneGame
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiPortsUpdateGameRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiPortsUpdateGameRequest'
+          description: OK
+      summary: Update One Game
+      tags:
+      - games
+    post:
+      description: Create One Game
+      operationId: createOneGame
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiPortsCreateGameRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiPortsCreateGameRequest'
+          description: OK
+      summary: Create One Game
+      tags:
+      - games
+  /api/v1/game/{gid}:
+    get:
+      description: Get One Game
+      operationId: getOneGame
+      parameters:
+      - in: path
+        name: gid
+        required: true
+        schema:
+          example: xxxx-xxxxx-xxxxx-xxxx
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelGame'
+          description: OK
+      summary: Get One Game
+      tags:
+      - games
   /api/v1/player:
     get:
-      description: Get Many Bees
+      description: Get Many Players
       operationId: getManyPlayers
       parameters:
       - in: query
@@ -87,12 +145,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiPortsGetManyPlayersQuery'
           description: OK
-      summary: Get Many Bees
+      summary: Get Many Players
       tags:
       - players
     patch:
-      description: Update One Bee
-      operationId: updateOneOperationId
+      description: Update One Player
+      operationId: updateOnePlayer
       requestBody:
         content:
           application/json:
@@ -105,12 +163,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiPortsUpdatePlayerRequest'
           description: OK
-      summary: Update One Bee
+      summary: Update One Player
       tags:
       - players
     post:
       description: Create One Player
-      operationId: createOneOperationId
+      operationId: createOnePlayer
       requestBody:
         content:
           application/json:
@@ -149,6 +207,14 @@ paths:
       - players
 components:
   schemas:
+    ApiPortsCreateGameRequest:
+      properties:
+        gid:
+          nullable: true
+          type: string
+        status:
+          type: string
+      type: object
     ApiPortsCreatePlayerRequest:
       properties:
         email:
@@ -163,6 +229,18 @@ components:
         password:
           type: string
       type: object
+    ApiPortsGetManyGamesQuery:
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        sort:
+          $ref: '#/components/schemas/ModelSortDirection'
+        sortBy:
+          nullable: true
+          type: string
+      type: object
     ApiPortsGetManyPlayersQuery:
       properties:
         page:
@@ -172,6 +250,12 @@ components:
         sort:
           $ref: '#/components/schemas/ModelSortDirection'
         sortBy:
+          nullable: true
+          type: string
+      type: object
+    ApiPortsUpdateGameRequest:
+      properties:
+        status:
           nullable: true
           type: string
       type: object
@@ -188,6 +272,17 @@ components:
           type: string
         password:
           nullable: true
+          type: string
+      type: object
+    ModelGame:
+      properties:
+        createdAt:
+          type: string
+        gid:
+          type: string
+        status:
+          type: string
+        updatedAt:
           type: string
       type: object
     ModelPlayer:

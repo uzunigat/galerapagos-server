@@ -9,8 +9,8 @@ import (
 type PlayerService interface {
 	GetOne(ctx model.Context, gid string) (*model.Player, error)
 	GetMany(ctx model.Context, query apiports.GetManyPlayersQuery) ([]model.Player, model.ResponseMeta, error)
-	CreateOne(ctx model.Context, createBeeRequest apiports.CreatePlayerRequest) (*model.Player, error)
-	UpdateOne(ctx model.Context, gid string, updateBeeRequest apiports.UpdatePlayerRequest) (*model.Player, error)
+	CreateOne(ctx model.Context, createPlayerRequest apiports.CreatePlayerRequest) (*model.Player, error)
+	UpdateOne(ctx model.Context, gid string, updatePlayerRequest apiports.UpdatePlayerRequest) (*model.Player, error)
 }
 
 type playerService struct {
@@ -47,18 +47,18 @@ func (service *playerService) CreateOne(ctx model.Context, createPlayerRequest a
 	}
 
 	createPlayerRequest.Gid = service.gidGenerator.GenerateIfEmpty(createPlayerRequest.Gid)
-	spiCreateBeeRequest := spiports.CreatePlayerRequest{
+	spiCreatePlayerRequest := spiports.CreatePlayerRequest{
 		CreatePlayerRequest: createPlayerRequest,
 		Gid:                 *createPlayerRequest.Gid,
 	}
 
-	createdBee, err := service.repository.CreateOne(ctx, spiCreateBeeRequest)
+	createdPlayer, err := service.repository.CreateOne(ctx, spiCreatePlayerRequest)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return createdBee, nil
+	return createdPlayer, nil
 }
 
 func (service *playerService) UpdateOne(ctx model.Context, gid string, updatePlayerRequest apiports.UpdatePlayerRequest) (*model.Player, error) {
@@ -71,12 +71,12 @@ func (service *playerService) UpdateOne(ctx model.Context, gid string, updatePla
 		UpdatePlayerRequest: updatePlayerRequest,
 	}
 
-	updatedBee, err := service.repository.UpdateOne(ctx, gid, spiUpdatePlayerRequest)
+	updatedPlayer, err := service.repository.UpdateOne(ctx, gid, spiUpdatePlayerRequest)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return updatedBee, nil
+	return updatedPlayer, nil
 
 }
