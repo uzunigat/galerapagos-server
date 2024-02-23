@@ -45,13 +45,13 @@ func (controller *GameController) GetMany(ctx *gin.Context) {
 	})
 }
 
-func (controller *GameController) CreateOne(ctx *gin.Context) {
+func (controller *GameController) CreateNewGame(ctx *gin.Context) {
 	var gameRequest apiports.CreateGameRequest
 	if err := ctx.ShouldBindJSON(&gameRequest); err != nil {
 		controller.httpErrorHandler.Handle(ctx, err)
 		return
 	}
-	game, err := controller.service.CreateOne(model.AppContext{Context: ctx}, gameRequest)
+	game, err := controller.service.CreateNewGame(model.AppContext{Context: ctx}, gameRequest)
 	if err != nil {
 		controller.httpErrorHandler.Handle(ctx, err)
 		return

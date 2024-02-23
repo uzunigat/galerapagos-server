@@ -9,7 +9,7 @@ func AttachV1PGameRoutes(router *gin.Engine, gameController *controllers.GameCon
 	v1 := router.Group("/api/v1/")
 	v1.GET("/game/:gid", gameController.GetOne)
 	v1.GET("/game", gameController.GetMany)
-	v1.POST("/game", gameController.CreateOne)
+	v1.POST("/game/new-game", gameController.CreateNewGame)
 	v1.PATCH("/game/:gid", gameController.UpdateOne)
 	return v1
 }

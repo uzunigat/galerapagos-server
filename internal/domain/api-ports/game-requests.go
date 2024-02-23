@@ -5,8 +5,7 @@ import (
 )
 
 type CreateGameRequest struct {
-	Gid    *string `json:"gid,omitempty" form:"gid"`
-	Status string  `json:"status" form:"status" validate:"required,status"`
+	Gid *string `json:"gid,omitempty" form:"gid"`
 }
 
 type UpdateGameRequest struct {

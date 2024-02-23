@@ -212,8 +212,6 @@ components:
         gid:
           nullable: true
           type: string
-        status:
-          type: string
       type: object
     ApiPortsCreatePlayerRequest:
       properties:

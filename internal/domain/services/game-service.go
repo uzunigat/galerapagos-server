@@ -9,7 +9,7 @@ import (
 type GameService interface {
 	GetOne(ctx model.Context, gid string) (*model.Game, error)
 	GetMany(ctx model.Context, query apiports.GetManyGamesQuery) ([]model.Game, model.ResponseMeta, error)
-	CreateOne(ctx model.Context, createGameRequest apiports.CreateGameRequest) (*model.Game, error)
+	CreateNewGame(ctx model.Context, createGameRequest apiports.CreateGameRequest) (*model.Game, error)
 	UpdateOne(ctx model.Context, gid string, updatePlayerRequest apiports.UpdateGameRequest) (*model.Game, error)
 }
 
@@ -40,7 +40,7 @@ func (service *gameService) GetMany(ctx model.Context, query apiports.GetManyGam
 	return service.repository.GetMany(ctx, query)
 }
 
-func (service *gameService) CreateOne(ctx model.Context, createGameRequest apiports.CreateGameRequest) (*model.Game, error) {
+func (service *gameService) CreateNewGame(ctx model.Context, createGameRequest apiports.CreateGameRequest) (*model.Game, error) {
 	validationErrors := service.validator.ValidateStruct(createGameRequest)
 	if validationErrors != nil {
 		return nil, validationErrors
@@ -49,10 +49,10 @@ func (service *gameService) CreateOne(ctx model.Context, createGameRequest apipo
 	createGameRequest.Gid = service.gidGenerator.GenerateIfEmpty(createGameRequest.Gid)
 	spiCreateGameRequest := spiports.CreateGameRequest{
 		CreateGameRequest: createGameRequest,
-		Gid:               *createGameRequest.Gid,
+		Status:            model.GameCreated,
 	}
 
-	createdGame, err := service.repository.CreateOne(ctx, spiCreateGameRequest)
+	createdGame, err := service.repository.CreateNewGame(ctx, spiCreateGameRequest)
 
 	if err != nil {
 		return nil, err

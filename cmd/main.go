@@ -19,6 +19,7 @@ import (
 	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/spi/repositories/postgres"
 	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
 )
 
@@ -66,14 +67,24 @@ func main() {
 
 	playerService := services.NewPlayerService(playerRepository, serviceUtils)
 	gameService := services.NewGameService(gameRepository, serviceUtils)
+	websocketService := services.NewWebSocketService()
+
+	go websocketService.Run()
 
 	httpErrorHandler := httperror.NewHttpErrorHandler()
 
+	var upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
+
 	playerController := v1Controllers.NewPlayerController(playerService, httpErrorHandler)
 	gameController := v1Controllers.NewGameController(gameService, httpErrorHandler)
+	webSocketController := v1Controllers.NewWebSocketController(upgrader, httpErrorHandler, websocketService)
 
 	v1Routes.AttachV1PlayerRoutes(router, playerController)
 	v1Routes.AttachV1PGameRoutes(router, gameController)
+	v1Routes.AttachV1WebSocketRoutes(router, webSocketController)
 
 	server := api.NewServer(&config.App, router)
 

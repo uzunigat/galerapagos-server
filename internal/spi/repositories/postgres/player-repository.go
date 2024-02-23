@@ -40,7 +40,7 @@ func (repo *PostgresPlayerRepository) GetOne(ctx model.Context, gid string) (*mo
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, NewPlayerNotFoundError(fmt.Errorf("Player with gid %s could not be found.", gid))
+			return nil, NewPlayerNotFoundError(fmt.Errorf("player with gid %s could not be found", gid))
 		}
 		return nil, NewUnkownDatabaseError(err)
 	}

@@ -22,7 +22,7 @@ func NewGameRepository(dbClient *BunPostgresDatabaseClient) *PostgresGameReposit
 	}
 }
 
-func (repo *PostgresGameRepository) CreateOne(ctx model.Context, createGameRequest spiports.CreateGameRequest) (*model.Game, error) {
+func (repo *PostgresGameRepository) CreateNewGame(ctx model.Context, createGameRequest spiports.CreateGameRequest) (*model.Game, error) {
 	game := &model.Game{}
 
 	_, err := repo.client.DB.NewInsert().Model(&createGameRequest).ModelTableExpr(tableGame).Returning("*").Exec(ctx, game)
