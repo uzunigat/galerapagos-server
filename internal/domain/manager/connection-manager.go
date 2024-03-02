@@ -2,13 +2,12 @@ package manager
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sync"
 
 	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/domain/model"
 	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/domain/services"
-	messagingSpi "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/spi/messaging"
+	spiports "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/domain/spi-ports"
 	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/spi/repositories/redis"
 	"github.com/gorilla/websocket"
 )
@@ -35,9 +34,10 @@ type connectionManager struct {
 	mu            sync.Mutex
 	services      ConnectionManagerServices
 	redisClient   redis.RedisClient
+	publisher     spiports.Publisher
 }
 
-func NewConnectionManager(services ConnectionManagerServices, redisClient *redis.RedisClient) ConnectionManager {
+func NewConnectionManager(services ConnectionManagerServices, redisClient *redis.RedisClient, publisher spiports.Publisher) ConnectionManager {
 	return &connectionManager{
 		players:       make(map[*websocket.Conn]bool),
 		playerGids:    make(map[*string]string),
@@ -45,6 +45,7 @@ func NewConnectionManager(services ConnectionManagerServices, redisClient *redis
 		mapConnection: make(map[string]map[string]*websocket.Conn),
 		services:      services,
 		redisClient:   *redisClient,
+		publisher:     publisher,
 	}
 }
 
@@ -87,21 +88,7 @@ func (connectionManager *connectionManager) RegisterClient(conn *websocket.Conn,
 		return err
 	}
 
-	message := messagingSpi.Message{
-		Type:            messagingSpi.MessageTypePlayerJoinedGame,
-		Payload:         "Player joined the game",
-		PlayerGids:      connectionManager.GetPlayerGidsByGameGid(gameGid),
-		SourcePlayerGid: playerGid,
-		GameGid:         gameGid,
-	}
-
-	encodedMessage, err := json.Marshal(message)
-
-	if err != nil {
-		return err
-	}
-
-	connectionManager.redisClient.Publish(gameGid, encodedMessage)
+	connectionManager.publisher.PublishPlayerJoinedGame(playerGid, gameGid)
 
 	go connectionManager.SubcscribeToChannel(gameGid, playerGid)
 
@@ -116,10 +103,8 @@ func (connectionManager *connectionManager) RemoveClient(conn *websocket.Conn) {
 
 func (connectionManager *connectionManager) SendMessage(gameGid string, playerDestinationGid string, message []byte) {
 
-	// get connection given gameGid and playerDestinationGid
 	gameMap, ok := connectionManager.mapConnection[gameGid]
 	if !ok {
-		// handle the case where there is no game with the given gameGid
 		fmt.Print("No game with the given gameGid")
 	}
 

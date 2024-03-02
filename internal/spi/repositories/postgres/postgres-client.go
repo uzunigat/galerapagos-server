@@ -41,8 +41,10 @@ func (client *BunPostgresDatabaseClient) Connect() error {
 	log.Info().Msgf("Connecting to database: %s", connectionString)
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(connectionString)))
 	client.DB = bun.NewDB(sqldb, pgdialect.New())
+
 	log := logrus.New()
 	client.DB.AddQueryHook(logrusbun.NewQueryHook(logrusbun.QueryHookOptions{Logger: log}))
+
 	err := client.DB.Ping()
 	return err
 }

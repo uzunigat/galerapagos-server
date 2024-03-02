@@ -4,6 +4,7 @@ import (
 	apiports "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/domain/api-ports"
 	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/domain/model"
 	spiports "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/domain/spi-ports"
+	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/spi/repositories/redis"
 )
 
 type GameService interface {
@@ -24,14 +25,16 @@ type gameService struct {
 	repository   spiports.GameRepository
 	validator    model.ServiceValidator
 	gidGenerator model.GidGenerator
+	publisher    spiports.Publisher
 }
 
-func NewGameService(repository spiports.GameRepository, utils model.DomainUtils, services GameServices) GameService {
+func NewGameService(repository spiports.GameRepository, utils model.DomainUtils, services GameServices, redisClient *redis.RedisClient, publisher spiports.Publisher) GameService {
 	return &gameService{
 		repository:   repository,
 		validator:    utils.Validator,
 		gidGenerator: utils.GidGenerator,
 		services:     services,
+		publisher:    publisher,
 	}
 }
 
@@ -100,7 +103,7 @@ func (service *gameService) Start(ctx model.Context, gid string) (*model.Game, e
 		return nil, error
 	}
 
-	// service.webSocketProducer.SendGameStartedMessage(game.Gid, "Game has started")
+	service.publisher.PublishGameStarted(game.Gid)
 
 	return game, nil
 }

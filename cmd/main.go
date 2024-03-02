@@ -38,6 +38,7 @@ func main() {
 	appStateManager := utils.NewAppStateManager()
 
 	dbClient := postgres.NewBunPostgresDatabaseClient(&config.Db)
+
 	redisClient := redis.NewRedisClient(config.Redis)
 
 	appStateManager.AddClosableDependency("db", dbClient)
@@ -70,18 +71,20 @@ func main() {
 	gameRepository := postgres.NewGameRepository(dbClient)
 	playerGameRelationRepository := postgres.NewPlayerGameRelationRepository(dbClient)
 
+	publisher := redis.NewPublisher(redisClient)
+
 	playerService := services.NewPlayerService(playerRepository, serviceUtils)
 	playerGameRelationService := services.NewPlayerGameRelationService(playerGameRelationRepository, serviceUtils.GidGenerator)
 
 	connectionManager := manager.NewConnectionManager(manager.ConnectionManagerServices{
 		PlayerGameRelation: playerGameRelationService,
-	}, redisClient)
+	}, redisClient, publisher)
 
 	go connectionManager.Run()
 
 	gameService := services.NewGameService(gameRepository, serviceUtils, services.GameServices{
 		PlayerGameRelation: playerGameRelationService,
-	})
+	}, redisClient, publisher)
 	httpErrorHandler := httperror.NewHttpErrorHandler()
 
 	var upgrader = websocket.Upgrader{
