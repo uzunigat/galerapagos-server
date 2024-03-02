@@ -276,12 +276,23 @@ components:
       properties:
         createdAt:
           type: string
+        foodLevel:
+          type: integer
         gid:
           type: string
+        raftLevel:
+          type: integer
         status:
           type: string
         updatedAt:
           type: string
+        waterLevel:
+          type: integer
+        weatherCards:
+          items:
+            $ref: '#/components/schemas/ModelWeatherCard'
+          nullable: true
+          type: array
       type: object
     ModelPlayer:
       properties:
@@ -308,6 +319,19 @@ components:
       - DESC
       nullable: true
       type: string
+    ModelWeatherCard:
+      properties:
+        gid:
+          type: string
+        is_final_game:
+          type: boolean
+        name:
+          type: string
+        quantity:
+          type: integer
+        water_level:
+          type: integer
+      type: object
   securitySchemes:
     BearerAuth:
       bearerFormat: JWT

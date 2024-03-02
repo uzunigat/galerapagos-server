@@ -10,6 +10,7 @@ import (
 	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/api"
 	httperror "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/api/http/error"
 	sysRoutes "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/api/http/sys/routes"
+	httpV1 "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/api/http/v1/controllers"
 	v1Controllers "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/api/http/v1/controllers"
 	v1Routes "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/api/http/v1/routes"
 
@@ -70,11 +71,13 @@ func main() {
 	playerRepository := postgres.NewPlayerRepository(dbClient)
 	gameRepository := postgres.NewGameRepository(dbClient)
 	playerGameRelationRepository := postgres.NewPlayerGameRelationRepository(dbClient)
+	weatherRepository := postgres.NewWeatherRepository(dbClient)
 
 	publisher := redis.NewPublisher(redisClient)
 
 	playerService := services.NewPlayerService(playerRepository, serviceUtils)
 	playerGameRelationService := services.NewPlayerGameRelationService(playerGameRelationRepository, serviceUtils.GidGenerator)
+	weatherService := services.NewWeatherService(weatherRepository)
 
 	connectionManager := manager.NewConnectionManager(manager.ConnectionManagerServices{
 		PlayerGameRelation: playerGameRelationService,
@@ -87,13 +90,22 @@ func main() {
 	}, redisClient, publisher)
 	httpErrorHandler := httperror.NewHttpErrorHandler()
 
+	gameStateService := services.NewGameStateService(services.GameStateServices{
+		WeatherService: weatherService,
+		GameService:    gameService,
+	})
+
 	var upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 	}
 
 	playerController := v1Controllers.NewPlayerController(playerService, httpErrorHandler)
-	gameController := v1Controllers.NewGameController(gameService, httpErrorHandler)
+	gameController := v1Controllers.NewGameController(httpV1.GameControllerServices{
+		Game:               gameService,
+		GameState:          gameStateService,
+		PlayerGameRelation: playerGameRelationService,
+	}, httpErrorHandler)
 	webSocketController := v1Controllers.NewWebSocketController(upgrader, httpErrorHandler, connectionManager)
 
 	v1Routes.AttachV1PlayerRoutes(router, playerController)

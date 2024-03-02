@@ -13,7 +13,7 @@ type GameService interface {
 	CreateNewGame(ctx model.Context, createGameRequest apiports.CreateGameRequest) (*model.Game, error)
 	UpdateOne(ctx model.Context, gid string, updatePlayerRequest apiports.UpdateGameRequest) (*model.Game, error)
 	PlayerJoin(ctx model.Context, gid string, playerGid string) (*model.PlayerGameRelation, error)
-	Start(ctx model.Context, gid string) (*model.Game, error)
+	Start(ctx model.Context, gameGid string, startGameRequest apiports.StartGameRequest) (*model.Game, error)
 }
 
 type GameServices struct {
@@ -96,8 +96,16 @@ func (service *gameService) PlayerJoin(ctx model.Context, gid string, playerGid 
 	return service.services.PlayerGameRelation.JoinGame(ctx, playerGid, gid)
 }
 
-func (service *gameService) Start(ctx model.Context, gid string) (*model.Game, error) {
-	game, error := service.repository.Start(ctx, gid)
+func (service *gameService) Start(ctx model.Context, gameGid string, startGameRequest apiports.StartGameRequest) (*model.Game, error) {
+
+	spiRequest := spiports.StartGameRequest{
+		Status:         model.GameStatus(*startGameRequest.Status),
+		FoodResources:  startGameRequest.FoodResources,
+		WaterResources: startGameRequest.WaterResources,
+		WeatherCards:   startGameRequest.WeatherCards,
+	}
+
+	game, error := service.repository.Start(ctx, gameGid, spiRequest)
 
 	if error != nil {
 		return nil, error

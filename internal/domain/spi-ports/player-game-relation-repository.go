@@ -17,4 +17,5 @@ type PlayerGameRelationRepository interface {
 	GetOne(ctx model.Context, playerGid string, gameGid string) (*model.PlayerGameRelation, error)
 	CreateOne(ctx model.Context, request CreateOnePlayerGameRelationRequest) (*model.PlayerGameRelation, error)
 	UpdateOne(ctx model.Context, gid string, status UpdateOnePlayerGameRelationRequest) (*model.PlayerGameRelation, error)
+	GetByGameGid(ctx model.Context, gameGid string) ([]*model.PlayerGameRelation, error)
 }

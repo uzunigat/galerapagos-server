@@ -56,3 +56,15 @@ func (repo *PlayerGameRelationRepository) UpdateOne(ctx model.Context, gid strin
 
 	return relation, nil
 }
+
+func (repo *PlayerGameRelationRepository) GetByGameGid(ctx model.Context, gameGid string) ([]*model.PlayerGameRelation, error) {
+	var relations []*model.PlayerGameRelation
+
+	err := repo.client.DB.NewSelect().Model(&relations).ModelTableExpr(tablePlayerGameRelation).Where("game_gid = ?", gameGid).Scan(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return relations, nil
+}

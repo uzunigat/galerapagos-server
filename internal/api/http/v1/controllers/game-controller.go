@@ -10,17 +10,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type GameControllerServices struct {
+	Game               services.GameService
+	GameState          services.GameStateService
+	PlayerGameRelation services.PlayerGameRelationService
+}
+
 type GameController struct {
-	service          services.GameService
+	services         GameControllerServices
 	httpErrorHandler httperror.HttpErrorHandler
 }
 
-func NewGameController(service services.GameService, httpErrorHandler httperror.HttpErrorHandler) *GameController {
-	return &GameController{service: service, httpErrorHandler: httpErrorHandler}
+func NewGameController(services GameControllerServices, httpErrorHandler httperror.HttpErrorHandler) *GameController {
+	return &GameController{services: services, httpErrorHandler: httpErrorHandler}
 }
 
 func (controller *GameController) GetOne(ctx *gin.Context) {
-	game, err := controller.service.GetOne(model.AppContext{Context: ctx}, ctx.Param("gid"))
+	game, err := controller.services.Game.GetOne(model.AppContext{Context: ctx}, ctx.Param("gid"))
 	if err != nil {
 		controller.httpErrorHandler.Handle(ctx, err)
 		return
@@ -34,7 +40,7 @@ func (controller *GameController) GetMany(ctx *gin.Context) {
 		controller.httpErrorHandler.Handle(ctx, err)
 		return
 	}
-	games, responseMeta, err := controller.service.GetMany(model.AppContext{Context: ctx}, gameQuery)
+	games, responseMeta, err := controller.services.Game.GetMany(model.AppContext{Context: ctx}, gameQuery)
 	if err != nil {
 		controller.httpErrorHandler.Handle(ctx, err)
 		return
@@ -51,7 +57,7 @@ func (controller *GameController) CreateNewGame(ctx *gin.Context) {
 		controller.httpErrorHandler.Handle(ctx, err)
 		return
 	}
-	game, err := controller.service.CreateNewGame(model.AppContext{Context: ctx}, gameRequest)
+	game, err := controller.services.Game.CreateNewGame(model.AppContext{Context: ctx}, gameRequest)
 	if err != nil {
 		controller.httpErrorHandler.Handle(ctx, err)
 		return
@@ -66,7 +72,7 @@ func (controller *GameController) UpdateOne(ctx *gin.Context) {
 		controller.httpErrorHandler.Handle(ctx, err)
 		return
 	}
-	game, err := controller.service.UpdateOne(model.AppContext{Context: ctx}, gid, gameRequest)
+	game, err := controller.services.Game.UpdateOne(model.AppContext{Context: ctx}, gid, gameRequest)
 	if err != nil {
 		controller.httpErrorHandler.Handle(ctx, err)
 		return
@@ -77,7 +83,7 @@ func (controller *GameController) UpdateOne(ctx *gin.Context) {
 func (controller *GameController) PlayerJoin(ctx *gin.Context) {
 	gid := ctx.Param("gid")
 	playerGid := ctx.Param("playerGid")
-	game, err := controller.service.PlayerJoin(model.AppContext{Context: ctx}, gid, playerGid)
+	game, err := controller.services.Game.PlayerJoin(model.AppContext{Context: ctx}, gid, playerGid)
 	if err != nil {
 		controller.httpErrorHandler.Handle(ctx, err)
 		return
@@ -87,10 +93,31 @@ func (controller *GameController) PlayerJoin(ctx *gin.Context) {
 
 func (controller *GameController) Start(ctx *gin.Context) {
 	gid := ctx.Param("gid")
-	game, err := controller.service.Start(model.AppContext{Context: ctx}, gid)
+
+	playerGameRelations, err := controller.services.PlayerGameRelation.GetByGameGid(model.AppContext{Context: ctx}, gid)
+
 	if err != nil {
 		controller.httpErrorHandler.Handle(ctx, err)
 		return
 	}
+
+	game, err := controller.services.GameState.SetupGame(model.AppContext{Context: ctx}, len(playerGameRelations))
+
+	if err != nil {
+		controller.httpErrorHandler.Handle(ctx, err)
+		return
+	}
+
+	gameInProgress := model.GameInProgress
+
+	startGameRequest := apiports.StartGameRequest{
+		Status:         &gameInProgress,
+		FoodResources:  game.FoodResources,
+		WaterResources: game.WaterResources,
+		WeatherCards:   game.WeatherCards,
+	}
+
+	controller.services.Game.Start(model.AppContext{Context: ctx}, gid, startGameRequest)
+
 	ctx.JSON(http.StatusOK, game)
 }
