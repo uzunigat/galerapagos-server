@@ -13,6 +13,11 @@ up: build
 	@docker-compose up app
 	@echo "Exited."
 
+up-dependencies:
+	@echo "---> Starting dependencies..."
+	@docker-compose up -d db redis prometheus redis-exporter grafana || (echo "Failed to start dependencies"; exit 1)
+	@echo "Exited."
+
 up-dev:
 	@echo "---> Starting dependencies..."
 	@docker-compose up app-dev || (echo "Failed to start app-dev container"; exit 1)

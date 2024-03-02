@@ -2,19 +2,20 @@ package httpV1
 
 import (
 	httperror "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/api/http/error"
-	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/domain/services"
+	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/domain/manager"
+	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/domain/model"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
 type WebSocketController struct {
-	httpErrorHandler httperror.HttpErrorHandler
-	upgrader         websocket.Upgrader
-	websocketService services.WebSocketService
+	httpErrorHandler  httperror.HttpErrorHandler
+	upgrader          websocket.Upgrader
+	connectionManager manager.ConnectionManager
 }
 
-func NewWebSocketController(upgrader websocket.Upgrader, httpErrorHandler httperror.HttpErrorHandler, websocketService services.WebSocketService) *WebSocketController {
-	return &WebSocketController{httpErrorHandler: httpErrorHandler, upgrader: upgrader, websocketService: websocketService}
+func NewWebSocketController(upgrader websocket.Upgrader, httpErrorHandler httperror.HttpErrorHandler, connectionManager manager.ConnectionManager) *WebSocketController {
+	return &WebSocketController{httpErrorHandler: httpErrorHandler, upgrader: upgrader, connectionManager: connectionManager}
 }
 
 func (controller *WebSocketController) GetMessage(ctx *gin.Context) {
@@ -25,13 +26,11 @@ func (controller *WebSocketController) GetMessage(ctx *gin.Context) {
 	}
 	defer conn.Close()
 
-	clientID := ctx.Query("clientID")
-	gameID := ctx.Query("gameID")
+	playerGid := ctx.Query("clientGid")
+	gameGid := ctx.Query("gameGid")
 
-	controller.websocketService.RegisterClient(conn, clientID, gameID)
+	controller.connectionManager.RegisterClient(conn, model.AppContext{Context: ctx}, playerGid, gameGid)
 
-	controller.websocketService.SendMessage(gameID, []byte("Hello from server"))
-
-	controller.websocketService.ListenForMessages(conn, gameID)
+	controller.connectionManager.ListenForMessages(conn, gameGid)
 
 }

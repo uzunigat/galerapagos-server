@@ -1,6 +1,7 @@
 package postgres
 
 const (
-	tablePlayer = "player"
-	tableGame   = "game"
+	tablePlayer             = "player"
+	tableGame               = "game"
+	tablePlayerGameRelation = "player_game_relation"
 )

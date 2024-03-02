@@ -13,3 +13,7 @@ func NewGameNotFoundError(err error) *errors.CustomError {
 func NewPlayerNotFoundError(err error) *errors.CustomError {
 	return errors.NewRecordNotFoundError("PLAYER_NOT_FOUND", err)
 }
+
+func NewPlayerGameRelationNotFoundError(err error) *errors.CustomError {
+	return errors.NewRecordNotFoundError("PLAYER_GAME_RELATION_NOT_FOUND", err)
+}

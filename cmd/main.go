@@ -12,11 +12,14 @@ import (
 	sysRoutes "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/api/http/sys/routes"
 	v1Controllers "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/api/http/v1/controllers"
 	v1Routes "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/api/http/v1/routes"
+
 	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/api/middlewares"
+	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/domain/manager"
 	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/domain/model"
 	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/domain/services"
 	domainutils "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/domain/utils"
 	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/spi/repositories/postgres"
+	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/spi/repositories/redis"
 	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -35,6 +38,7 @@ func main() {
 	appStateManager := utils.NewAppStateManager()
 
 	dbClient := postgres.NewBunPostgresDatabaseClient(&config.Db)
+	redisClient := redis.NewRedisClient(config.Redis)
 
 	appStateManager.AddClosableDependency("db", dbClient)
 	appStateManager.AddMonitorableDependency("db", dbClient)
@@ -64,13 +68,20 @@ func main() {
 
 	playerRepository := postgres.NewPlayerRepository(dbClient)
 	gameRepository := postgres.NewGameRepository(dbClient)
+	playerGameRelationRepository := postgres.NewPlayerGameRelationRepository(dbClient)
 
 	playerService := services.NewPlayerService(playerRepository, serviceUtils)
-	gameService := services.NewGameService(gameRepository, serviceUtils)
-	websocketService := services.NewWebSocketService()
+	playerGameRelationService := services.NewPlayerGameRelationService(playerGameRelationRepository, serviceUtils.GidGenerator)
 
-	go websocketService.Run()
+	connectionManager := manager.NewConnectionManager(manager.ConnectionManagerServices{
+		PlayerGameRelation: playerGameRelationService,
+	}, redisClient)
 
+	go connectionManager.Run()
+
+	gameService := services.NewGameService(gameRepository, serviceUtils, services.GameServices{
+		PlayerGameRelation: playerGameRelationService,
+	})
 	httpErrorHandler := httperror.NewHttpErrorHandler()
 
 	var upgrader = websocket.Upgrader{
@@ -80,7 +91,7 @@ func main() {
 
 	playerController := v1Controllers.NewPlayerController(playerService, httpErrorHandler)
 	gameController := v1Controllers.NewGameController(gameService, httpErrorHandler)
-	webSocketController := v1Controllers.NewWebSocketController(upgrader, httpErrorHandler, websocketService)
+	webSocketController := v1Controllers.NewWebSocketController(upgrader, httpErrorHandler, connectionManager)
 
 	v1Routes.AttachV1PlayerRoutes(router, playerController)
 	v1Routes.AttachV1PGameRoutes(router, gameController)

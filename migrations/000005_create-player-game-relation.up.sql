@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS player_game_relation
     gid                    VARCHAR UNIQUE NOT NULL CHECK (gid <> ''),
     player_gid             VARCHAR NOT NULL REFERENCES player(gid) ON DELETE CASCADE,
     game_gid               VARCHAR NOT NULL REFERENCES game(gid) ON DELETE CASCADE,
+    status                 VARCHAR NOT NULL,
     created_at             TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at             TIMESTAMP NOT NULL DEFAULT NOW(),
     UNIQUE (player_gid, game_gid)

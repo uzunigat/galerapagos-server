@@ -6,19 +6,25 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     ports:
-      - 3000:3000
+      - 3001:3001
     networks:
       - internal-network
     env_file:
       - .env
+    links:
+      - redis
   app-dev:
     ports:
-      - 3000:3000
+      - 3001:3001
     image: cosmtrek/air
     working_dir: /app
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     env_file:
       - .env
@@ -26,6 +32,8 @@ services:
       - ./:/app
     networks:
       - internal-network
+    links:
+      - redis
   unit-test:
     build:
       context: ./
@@ -47,6 +55,13 @@ services:
       - .env
     networks:
       - internal-network
+  redis:
+    image: redis:alpine
+    ports:
+      - 6379:6379
+    networks:
+      - internal-network
+
   db:
     image: postgres:12.7-alpine@sha256:8b4e93c283134e56936c0115e552e3dbac05f323c898b100408ed6df77f3e1b5
     environment:

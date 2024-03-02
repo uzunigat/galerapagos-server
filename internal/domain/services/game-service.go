@@ -11,19 +11,27 @@ type GameService interface {
 	GetMany(ctx model.Context, query apiports.GetManyGamesQuery) ([]model.Game, model.ResponseMeta, error)
 	CreateNewGame(ctx model.Context, createGameRequest apiports.CreateGameRequest) (*model.Game, error)
 	UpdateOne(ctx model.Context, gid string, updatePlayerRequest apiports.UpdateGameRequest) (*model.Game, error)
+	PlayerJoin(ctx model.Context, gid string, playerGid string) (*model.PlayerGameRelation, error)
+	Start(ctx model.Context, gid string) (*model.Game, error)
+}
+
+type GameServices struct {
+	PlayerGameRelation PlayerGameRelationService
 }
 
 type gameService struct {
+	services     GameServices
 	repository   spiports.GameRepository
 	validator    model.ServiceValidator
 	gidGenerator model.GidGenerator
 }
 
-func NewGameService(repository spiports.GameRepository, utils model.DomainUtils) GameService {
+func NewGameService(repository spiports.GameRepository, utils model.DomainUtils, services GameServices) GameService {
 	return &gameService{
 		repository:   repository,
 		validator:    utils.Validator,
 		gidGenerator: utils.GidGenerator,
+		services:     services,
 	}
 }
 
@@ -79,4 +87,20 @@ func (service *gameService) UpdateOne(ctx model.Context, gid string, updateGameR
 
 	return updatedGame, nil
 
+}
+
+func (service *gameService) PlayerJoin(ctx model.Context, gid string, playerGid string) (*model.PlayerGameRelation, error) {
+	return service.services.PlayerGameRelation.JoinGame(ctx, playerGid, gid)
+}
+
+func (service *gameService) Start(ctx model.Context, gid string) (*model.Game, error) {
+	game, error := service.repository.Start(ctx, gid)
+
+	if error != nil {
+		return nil, error
+	}
+
+	// service.webSocketProducer.SendGameStartedMessage(game.Gid, "Game has started")
+
+	return game, nil
 }

@@ -94,3 +94,14 @@ func (repo *PostgresGameRepository) UpdateOne(ctx model.Context, gid string, upd
 	}
 	return game, nil
 }
+
+func (repo *PostgresGameRepository) Start(ctx model.Context, gid string) (*model.Game, error) {
+	game := &model.Game{}
+
+	_, err := repo.client.DB.NewUpdate().Table(tableGame).Set("status = ?", model.GameInProgress).Where("gid = ?", gid).Returning("*").Exec(ctx, game)
+
+	if err != nil {
+		return nil, NewUnkownDatabaseError(err)
+	}
+	return game, nil
+}

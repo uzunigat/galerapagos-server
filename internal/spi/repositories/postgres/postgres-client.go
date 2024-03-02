@@ -11,7 +11,9 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/oiime/logrusbun"
 	"github.com/rs/zerolog/log"
+	"github.com/sirupsen/logrus"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
@@ -39,6 +41,8 @@ func (client *BunPostgresDatabaseClient) Connect() error {
 	log.Info().Msgf("Connecting to database: %s", connectionString)
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(connectionString)))
 	client.DB = bun.NewDB(sqldb, pgdialect.New())
+	log := logrus.New()
+	client.DB.AddQueryHook(logrusbun.NewQueryHook(logrusbun.QueryHookOptions{Logger: log}))
 	err := client.DB.Ping()
 	return err
 }

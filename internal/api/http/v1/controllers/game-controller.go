@@ -73,3 +73,24 @@ func (controller *GameController) UpdateOne(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusCreated, game)
 }
+
+func (controller *GameController) PlayerJoin(ctx *gin.Context) {
+	gid := ctx.Param("gid")
+	playerGid := ctx.Param("playerGid")
+	game, err := controller.service.PlayerJoin(model.AppContext{Context: ctx}, gid, playerGid)
+	if err != nil {
+		controller.httpErrorHandler.Handle(ctx, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, game)
+}
+
+func (controller *GameController) Start(ctx *gin.Context) {
+	gid := ctx.Param("gid")
+	game, err := controller.service.Start(model.AppContext{Context: ctx}, gid)
+	if err != nil {
+		controller.httpErrorHandler.Handle(ctx, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, game)
+}
