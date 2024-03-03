@@ -280,6 +280,11 @@ components:
           type: integer
         gid:
           type: string
+        playerTurns:
+          items:
+            $ref: '#/components/schemas/ModelPlayer'
+          nullable: true
+          type: array
         raftLevel:
           type: integer
         status:
@@ -291,6 +296,11 @@ components:
         weatherCards:
           items:
             $ref: '#/components/schemas/ModelWeatherCard'
+          nullable: true
+          type: array
+        wreckCardGids:
+          items:
+            type: string
           nullable: true
           type: array
       type: object

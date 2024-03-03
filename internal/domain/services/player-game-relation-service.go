@@ -10,7 +10,7 @@ import (
 
 type PlayerGameRelationService interface {
 	JoinGame(ctx model.Context, playerGid string, gameGid string) (*model.PlayerGameRelation, error)
-	GetByGameGid(ctx model.Context, gameGid string) ([]*model.PlayerGameRelation, error)
+	GetPlayersByGameGid(ctx model.Context, gameGid string) ([]model.Player, error)
 }
 type playerGameRelationService struct {
 	repository   spiports.PlayerGameRelationRepository
@@ -47,6 +47,6 @@ func (service *playerGameRelationService) JoinGame(ctx model.Context, playerGid 
 	return player, nil
 }
 
-func (service *playerGameRelationService) GetByGameGid(ctx model.Context, gameGid string) ([]*model.PlayerGameRelation, error) {
-	return service.repository.GetByGameGid(ctx, gameGid)
+func (service *playerGameRelationService) GetPlayersByGameGid(ctx model.Context, gameGid string) ([]model.Player, error) {
+	return service.repository.GetPlayersByGameGid(ctx, gameGid)
 }

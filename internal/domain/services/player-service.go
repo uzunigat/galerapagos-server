@@ -8,6 +8,7 @@ import (
 
 type PlayerService interface {
 	GetOne(ctx model.Context, gid string) (*model.Player, error)
+	GetOneByEmail(ctx model.Context, email string) (*model.Player, error)
 	GetMany(ctx model.Context, query apiports.GetManyPlayersQuery) ([]model.Player, model.ResponseMeta, error)
 	CreateOne(ctx model.Context, createPlayerRequest apiports.CreatePlayerRequest) (*model.Player, error)
 	UpdateOne(ctx model.Context, gid string, updatePlayerRequest apiports.UpdatePlayerRequest) (*model.Player, error)
@@ -29,6 +30,10 @@ func NewPlayerService(repository spiports.PlayerRepository, utils model.DomainUt
 
 func (service *playerService) GetOne(ctx model.Context, gid string) (*model.Player, error) {
 	return service.repository.GetOne(ctx, gid)
+}
+
+func (service *playerService) GetOneByEmail(ctx model.Context, email string) (*model.Player, error) {
+	return service.repository.GetOneByEmail(ctx, email)
 }
 
 func (service *playerService) GetMany(ctx model.Context, query apiports.GetManyPlayersQuery) ([]model.Player, model.ResponseMeta, error) {

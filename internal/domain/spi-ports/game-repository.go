@@ -15,6 +15,12 @@ type StartGameRequest struct {
 	FoodResources  int
 	WaterResources int
 	WeatherCards   []model.WeatherCard
+	WreckCardGids  []string
+	PlayerTurns    []model.Player
+}
+
+type EndGameRequest struct {
+	Status model.GameStatus
 }
 
 type UpdateGameRequest struct {
@@ -27,4 +33,5 @@ type GameRepository interface {
 	GetMany(ctx model.Context, query apiports.GetManyGamesQuery) ([]model.Game, model.ResponseMeta, error)
 	UpdateOne(ctx model.Context, gid string, updateGameRequest UpdateGameRequest) (*model.Game, error)
 	Start(ctx model.Context, gameGid string, startRequest StartGameRequest) (*model.Game, error)
+	End(ctx model.Context, gameGid string, endRequest EndGameRequest) (*model.Game, error)
 }

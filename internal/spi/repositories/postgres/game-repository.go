@@ -59,7 +59,7 @@ func (repo *PostgresGameRepository) GetMany(ctx model.Context, query apiports.Ge
 
 	dbQuery := repo.client.DB.NewSelect().Model(&games).ModelTableExpr(tableGame)
 
-	dbutils.UrlToDbQuery(dbQuery, query)
+	dbutils.MapStructToDBQueryWhere(dbQuery, query)
 
 	dbutils.UrlToDbPagination(dbQuery, pagination)
 
@@ -98,7 +98,19 @@ func (repo *PostgresGameRepository) UpdateOne(ctx model.Context, gid string, upd
 func (repo *PostgresGameRepository) Start(ctx model.Context, gameGid string, startGameRequest spiports.StartGameRequest) (*model.Game, error) {
 	game := &model.Game{}
 
-	_, err := repo.client.DB.NewUpdate().Model(startGameRequest).ModelTableExpr(tableGame).Where("gid = ?", gameGid).Returning("*").Exec(ctx, game)
+	_, err := repo.client.DB.NewUpdate().Model(&startGameRequest).ModelTableExpr(tableGame).Where("gid = ?", gameGid).Returning("*").Exec(ctx, game)
+
+	if err != nil {
+		return nil, NewUnkownDatabaseError(err)
+	}
+
+	return game, nil
+}
+
+func (repo *PostgresGameRepository) End(ctx model.Context, gameGid string, endGameRequest spiports.EndGameRequest) (*model.Game, error) {
+	game := &model.Game{}
+
+	_, err := repo.client.DB.NewUpdate().Model(&endGameRequest).ModelTableExpr(tableGame).Where("gid = ?", gameGid).Returning("*").Exec(ctx, game)
 
 	if err != nil {
 		return nil, NewUnkownDatabaseError(err)

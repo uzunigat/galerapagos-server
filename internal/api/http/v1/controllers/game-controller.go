@@ -45,6 +45,7 @@ func (controller *GameController) GetMany(ctx *gin.Context) {
 		controller.httpErrorHandler.Handle(ctx, err)
 		return
 	}
+
 	ctx.JSON(http.StatusOK, apiports.GetManyGamesResponse{
 		Meta: responseMeta,
 		Data: games,
@@ -94,14 +95,14 @@ func (controller *GameController) PlayerJoin(ctx *gin.Context) {
 func (controller *GameController) Start(ctx *gin.Context) {
 	gid := ctx.Param("gid")
 
-	playerGameRelations, err := controller.services.PlayerGameRelation.GetByGameGid(model.AppContext{Context: ctx}, gid)
+	players, err := controller.services.PlayerGameRelation.GetPlayersByGameGid(model.AppContext{Context: ctx}, gid)
 
 	if err != nil {
 		controller.httpErrorHandler.Handle(ctx, err)
 		return
 	}
 
-	game, err := controller.services.GameState.SetupGame(model.AppContext{Context: ctx}, len(playerGameRelations))
+	game, err := controller.services.GameState.SetupGame(model.AppContext{Context: ctx}, players)
 
 	if err != nil {
 		controller.httpErrorHandler.Handle(ctx, err)
@@ -115,9 +116,36 @@ func (controller *GameController) Start(ctx *gin.Context) {
 		FoodResources:  game.FoodResources,
 		WaterResources: game.WaterResources,
 		WeatherCards:   game.WeatherCards,
+		WreckCardGids:  game.WreckCardGids,
+		PlayerTurns:    game.PlayerTurns,
 	}
 
-	controller.services.Game.Start(model.AppContext{Context: ctx}, gid, startGameRequest)
+	updatedGame, err := controller.services.Game.Start(model.AppContext{Context: ctx}, gid, startGameRequest)
 
+	if err != nil {
+		controller.httpErrorHandler.Handle(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, updatedGame)
+}
+
+func (controller *GameController) End(ctx *gin.Context) {
+	gid := ctx.Param("gid")
+	game, err := controller.services.Game.End(model.AppContext{Context: ctx}, gid)
+	if err != nil {
+		controller.httpErrorHandler.Handle(ctx, err)
+		return
+	}
 	ctx.JSON(http.StatusOK, game)
+}
+
+func (controller *GameController) GetManyPlayers(ctx *gin.Context) {
+	gameGid := ctx.Param("gid")
+	players, err := controller.services.PlayerGameRelation.GetPlayersByGameGid(model.AppContext{Context: ctx}, gameGid)
+	if err != nil {
+		controller.httpErrorHandler.Handle(ctx, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, players)
 }

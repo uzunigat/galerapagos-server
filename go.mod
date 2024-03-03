@@ -3,7 +3,7 @@ module github.com/Audibene-GMBH/ta.go-hexagonal-skeletor
 go 1.21
 
 require (
-	github.com/gin-contrib/cors v1.3.1
+	github.com/gin-contrib/cors v1.5.0
 	github.com/gin-contrib/logger v0.2.2
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-playground/validator/v10 v10.18.0
@@ -13,9 +13,9 @@ require (
 	github.com/rs/zerolog v1.31.0
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggest/openapi-go v0.2.14
-	github.com/uptrace/bun v1.0.22
-	github.com/uptrace/bun/dialect/pgdialect v1.0.21
-	github.com/uptrace/bun/dialect/sqlitedialect v1.0.22
+	github.com/uptrace/bun v1.1.17
+	github.com/uptrace/bun/dialect/pgdialect v1.1.17
+	github.com/uptrace/bun/dialect/sqlitedialect v1.1.17
 	github.com/uptrace/bun/driver/pgdriver v1.0.21
 	github.com/uptrace/bun/driver/sqliteshim v1.0.22
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
@@ -27,6 +27,7 @@ require (
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
 	github.com/chenzhuoyu/iasm v0.9.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/fatih/color v1.16.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
@@ -45,7 +46,7 @@ require (
 require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/joho/godotenv v1.5.1
-	github.com/oiime/logrusbun v0.1.1
+	github.com/uptrace/bun/extra/bundebug v1.1.17
 )
 
 require (
@@ -67,7 +68,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
-	github.com/sirupsen/logrus v1.9.3
+	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/swaggest/jsonschema-go v0.3.24 // indirect
 	github.com/swaggest/refl v1.0.1 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect

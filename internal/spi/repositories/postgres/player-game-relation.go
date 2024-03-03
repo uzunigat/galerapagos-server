@@ -57,14 +57,14 @@ func (repo *PlayerGameRelationRepository) UpdateOne(ctx model.Context, gid strin
 	return relation, nil
 }
 
-func (repo *PlayerGameRelationRepository) GetByGameGid(ctx model.Context, gameGid string) ([]*model.PlayerGameRelation, error) {
-	var relations []*model.PlayerGameRelation
+func (repo *PlayerGameRelationRepository) GetPlayersByGameGid(ctx model.Context, gameGid string) ([]model.Player, error) {
+	var players []model.Player
 
-	err := repo.client.DB.NewSelect().Model(&relations).ModelTableExpr(tablePlayerGameRelation).Where("game_gid = ?", gameGid).Scan(ctx)
+	err := repo.client.DB.NewSelect().Model(&players).ModelTableExpr(tablePlayer).Join("JOIN player_game_relation ON player.gid = player_game_relation.player_gid").Where("player_game_relation.game_gid = ?", gameGid).OrderExpr("RANDOM()").Scan(ctx)
 
 	if err != nil {
-		return nil, err
+		return nil, NewUnkownDatabaseError(err)
 	}
 
-	return relations, nil
+	return players, nil
 }

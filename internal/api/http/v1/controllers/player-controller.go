@@ -1,12 +1,14 @@
 package httpV1
 
 import (
+	"fmt"
 	"net/http"
 
 	httperror "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/api/http/error"
 	apiports "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/domain/api-ports"
 	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/domain/model"
 	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/domain/services"
+	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/errors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,6 +27,25 @@ func (controller *PlayerController) GetOne(ctx *gin.Context) {
 		controller.httpErrorHandler.Handle(ctx, err)
 		return
 	}
+	ctx.JSON(http.StatusOK, player)
+}
+
+func (controller *PlayerController) GetOneByEmail(ctx *gin.Context) {
+	fmt.Printf("Email: %s\n", ctx.Param("email"))
+	fmt.Printf("Password: %v", ctx.Param("password"))
+
+	player, err := controller.service.GetOneByEmail(model.AppContext{Context: ctx}, ctx.Param("email"))
+	if err != nil {
+		controller.httpErrorHandler.Handle(ctx, err)
+		return
+	}
+
+	password := ctx.Param("password")
+	if password != player.Password {
+		controller.httpErrorHandler.Handle(ctx, errors.NewInvalidPayloadError("password", fmt.Errorf("password does not match")))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, player)
 }
 

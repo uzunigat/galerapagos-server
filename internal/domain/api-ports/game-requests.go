@@ -13,6 +13,8 @@ type StartGameRequest struct {
 	FoodResources  int                 `json:"food_resources" form:"food_resources"`
 	WaterResources int                 `json:"water_resources" form:"water_resources"`
 	WeatherCards   []model.WeatherCard `json:"weather_cards" form:"weather_cards"`
+	WreckCardGids  []string            `json:"wreck_card_gids" form:"wreck_card_gids"`
+	PlayerTurns    []model.Player      `json:"player_order_gids" form:"player_order_gids"`
 }
 
 type UpdateGameRequest struct {
@@ -20,7 +22,7 @@ type UpdateGameRequest struct {
 }
 
 type GetManyGamesQuery struct {
-	Status *string `form:"status"`
+	Status *model.GameStatus `form:"status"`
 	model.Pagination
 	model.Sorting
 }

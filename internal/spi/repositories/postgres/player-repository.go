@@ -48,6 +48,21 @@ func (repo *PostgresPlayerRepository) GetOne(ctx model.Context, gid string) (*mo
 	return player, nil
 }
 
+func (repo *PostgresPlayerRepository) GetOneByEmail(ctx model.Context, email string) (*model.Player, error) {
+	player := &model.Player{}
+
+	err := repo.client.DB.NewSelect().Model(player).ModelTableExpr(tablePlayer).Where("email = ?", email).Scan(ctx)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, NewPlayerNotFoundError(fmt.Errorf("player with email %s could not be found", email))
+		}
+		return nil, NewUnkownDatabaseError(err)
+	}
+
+	return player, nil
+}
+
 func (repo *PostgresPlayerRepository) GetMany(ctx model.Context, query apiports.GetManyPlayersQuery) ([]model.Player, model.ResponseMeta, error) {
 	players := make([]model.Player, 0)
 	pagination := dbutils.GetDefaultPagination(query.Pagination)

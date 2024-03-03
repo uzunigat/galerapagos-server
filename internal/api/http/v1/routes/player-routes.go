@@ -10,6 +10,7 @@ func AttachV1PlayerRoutes(router *gin.Engine, playerController *controllers.Play
 	v1.GET("/player/:gid", playerController.GetOne)
 	v1.GET("/player", playerController.GetMany)
 	v1.POST("/player", playerController.CreateOne)
+	v1.GET("/player/login/:email/:password", playerController.GetOneByEmail)
 	v1.PATCH("/player/:gid", playerController.UpdateOne)
 	return v1
 }

@@ -14,6 +14,7 @@ type GameService interface {
 	UpdateOne(ctx model.Context, gid string, updatePlayerRequest apiports.UpdateGameRequest) (*model.Game, error)
 	PlayerJoin(ctx model.Context, gid string, playerGid string) (*model.PlayerGameRelation, error)
 	Start(ctx model.Context, gameGid string, startGameRequest apiports.StartGameRequest) (*model.Game, error)
+	End(ctx model.Context, gameGid string) (*model.Game, error)
 }
 
 type GameServices struct {
@@ -103,6 +104,8 @@ func (service *gameService) Start(ctx model.Context, gameGid string, startGameRe
 		FoodResources:  startGameRequest.FoodResources,
 		WaterResources: startGameRequest.WaterResources,
 		WeatherCards:   startGameRequest.WeatherCards,
+		WreckCardGids:  startGameRequest.WreckCardGids,
+		PlayerTurns:    startGameRequest.PlayerTurns,
 	}
 
 	game, error := service.repository.Start(ctx, gameGid, spiRequest)
@@ -114,4 +117,13 @@ func (service *gameService) Start(ctx model.Context, gameGid string, startGameRe
 	service.publisher.PublishGameStarted(game.Gid)
 
 	return game, nil
+}
+
+func (service *gameService) End(ctx model.Context, gameGid string) (*model.Game, error) {
+
+	spiEndRequest := spiports.EndGameRequest{
+		Status: model.GameFinished,
+	}
+
+	return service.repository.End(ctx, gameGid, spiEndRequest)
 }

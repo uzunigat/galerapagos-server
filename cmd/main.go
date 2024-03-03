@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,6 +14,7 @@ import (
 	httpV1 "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/api/http/v1/controllers"
 	v1Controllers "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/api/http/v1/controllers"
 	v1Routes "github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/api/http/v1/routes"
+	"github.com/gin-contrib/cors"
 
 	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/api/middlewares"
 	"github.com/Audibene-GMBH/ta.go-hexagonal-skeletor/internal/domain/manager"
@@ -56,6 +58,10 @@ func main() {
 
 	router := gin.New()
 
+	configCors := cors.DefaultConfig()
+	configCors.AllowOrigins = []string{"*"}
+	router.Use(cors.New(configCors))
+
 	router.Use(gin.Recovery())
 	router.Use(middlewares.Logger())
 	router.Use(middlewares.Cors())
@@ -72,12 +78,14 @@ func main() {
 	gameRepository := postgres.NewGameRepository(dbClient)
 	playerGameRelationRepository := postgres.NewPlayerGameRelationRepository(dbClient)
 	weatherRepository := postgres.NewWeatherRepository(dbClient)
+	wreckRepository := postgres.NewWreckRepository(dbClient)
 
 	publisher := redis.NewPublisher(redisClient)
 
 	playerService := services.NewPlayerService(playerRepository, serviceUtils)
 	playerGameRelationService := services.NewPlayerGameRelationService(playerGameRelationRepository, serviceUtils.GidGenerator)
 	weatherService := services.NewWeatherService(weatherRepository)
+	wreckService := services.NewWreckService(wreckRepository)
 
 	connectionManager := manager.NewConnectionManager(manager.ConnectionManagerServices{
 		PlayerGameRelation: playerGameRelationService,
@@ -91,14 +99,17 @@ func main() {
 	httpErrorHandler := httperror.NewHttpErrorHandler()
 
 	gameStateService := services.NewGameStateService(services.GameStateServices{
-		WeatherService: weatherService,
-		GameService:    gameService,
+		Weather: weatherService,
+		Game:    gameService,
+		Wreck:   wreckService,
 	})
 
 	var upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 	}
+
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
 	playerController := v1Controllers.NewPlayerController(playerService, httpErrorHandler)
 	gameController := v1Controllers.NewGameController(httpV1.GameControllerServices{
